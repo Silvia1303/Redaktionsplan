@@ -177,7 +177,6 @@ function render(){
   else if(view==='detail')c.innerHTML=rDetail();
   else if(view==='calendar')c.innerHTML=rCalendar();
   document.getElementById('M').innerHTML='';
-  bind();
 }
 
 function rList(){
@@ -337,12 +336,11 @@ function showPostForm(p){
   });
 }
 
-function bind(){
-  var c=document.getElementById('C');
-  var newC=c.cloneNode(true);
-  c.parentNode.replaceChild(newC,c);
-  newC.addEventListener('click',function(ev){
+var lastAction=0;
+document.getElementById('C').addEventListener('click',function(ev){
+    var now=Date.now();if(now-lastAction<300)return;lastAction=now;
     var el=ev.target.closest('[data-a]');if(!el)return;
+    ev.stopPropagation();ev.preventDefault();
     var a=el.getAttribute('data-a'),id=el.getAttribute('data-id'),v=el.getAttribute('data-v');
     if(a==='tab'){tab=v;view='list';render()}
     else if(a==='cal'){view='calendar';render()}
@@ -361,11 +359,9 @@ function bind(){
     else if(a==='cnext'){calMonth++;if(calMonth>11){calMonth=0;calYear++}render()}
     else if(a==='calday'){
       var dayPosts=posts.filter(function(p){return p.datum===v});
-      if(dayPosts.length===1){selId=dayPosts[0].id;view='detail';render()}
-      else if(dayPosts.length>1){selId=dayPosts[0].id;view='detail';render()}
+      if(dayPosts.length>=1){selId=dayPosts[0].id;view='detail';render()}
     }
   });
-}
 
 document.getElementById('hdr-new').addEventListener('click',function(){showPostForm(null)});
 document.getElementById('hdr-backup').addEventListener('click',showBackupModal);
