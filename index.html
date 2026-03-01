@@ -118,6 +118,7 @@ body{font-family:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;color:var(-
     <div><div class="header-title">Redaktionsplan</div><div class="header-sub">Schmiedewerk Social Media</div></div>
   </div>
   <div class="header-right">
+    <button class="btn btn-subtle" id="hdr-backup">&#128190; Backup</button>
     <button class="btn btn-primary" id="hdr-new">+ Neuer Beitrag</button>
   </div>
 </div>
@@ -364,6 +365,46 @@ function bind(){
 }
 
 document.getElementById('hdr-new').addEventListener('click',function(){showPostForm(null)});
+document.getElementById('hdr-backup').addEventListener('click',showBackupModal);
+
+function showBackupModal(){
+  var b='<div style="margin-bottom:20px">';
+  b+='<div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:8px">Backup exportieren</div>';
+  b+='<div style="font-size:13px;color:var(--dim);margin-bottom:12px">Speichert alle Beitr\u00e4ge als Datei. Am iPad: Datei in "Dateien" oder iCloud speichern.</div>';
+  b+='<button class="btn btn-primary" style="width:100%" id="bk-export">&#128190; Backup herunterladen</button>';
+  b+='</div>';
+  b+='<div style="border-top:1px solid var(--border);padding-top:20px">';
+  b+='<div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:8px">Backup importieren</div>';
+  b+='<div style="font-size:13px;color:var(--dim);margin-bottom:12px">Stellt alle Beitr\u00e4ge aus einer Backup-Datei wieder her. Achtung: Aktuelle Daten werden ersetzt!</div>';
+  b+='<label class="btn btn-subtle" style="width:100%;justify-content:center;cursor:pointer">&#128194; Backup-Datei ausw\u00e4hlen<input type="file" id="bk-import" accept=".json" style="display:none"></label>';
+  b+='<div id="bk-msg" style="margin-top:10px;font-size:13px;text-align:center"></div>';
+  b+='</div>';
+  showModal('&#128190; Backup verwalten',b);
+  document.getElementById('bk-export').addEventListener('click',function(){
+    var data=JSON.stringify(posts,null,2);
+    var blob=new Blob([data],{type:'application/json'});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');
+    var d=new Date();
+    var fname='redaktionsplan_backup_'+d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+'.json';
+    a.href=url;a.download=fname;document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+    document.getElementById('bk-msg').innerHTML='<span style="color:var(--green)">&#10003; Backup heruntergeladen!</span>';
+  });
+  document.getElementById('bk-import').addEventListener('change',function(ev){
+    var file=ev.target.files[0];if(!file)return;
+    var reader=new FileReader();
+    reader.onload=function(e){
+      try{
+        var imported=JSON.parse(e.target.result);
+        if(!Array.isArray(imported)){document.getElementById('bk-msg').innerHTML='<span style="color:#d44">Ung\u00fcltige Datei!</span>';return}
+        if(confirm('Aktuelle Daten werden durch das Backup ersetzt. Fortfahren?')){
+          posts=imported;sv();closeM();render();
+        }
+      }catch(err){document.getElementById('bk-msg').innerHTML='<span style="color:#d44">Fehler beim Lesen der Datei!</span>';}
+    };
+    reader.readAsText(file);
+  });
+}
 
 // Init calendar to current month
 var now=new Date();calYear=now.getFullYear();calMonth=now.getMonth();
