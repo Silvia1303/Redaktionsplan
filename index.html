@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Redaktionsplan">
+<title>Redaktionsplan Schmiedewerk</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#faf7f2;--bg2:#fff;--bg3:#f5f0e8;
+  --text:#2c1810;--dim:#8c7a6b;--mid:#5c4a3a;
+  --accent:#c0582e;--accent2:#d4763e;--accent-bg:rgba(192,88,46,0.08);
+  --green:#3a7d44;--green-bg:rgba(58,125,68,0.1);
+  --blue:#3b6fa0;--blue-bg:rgba(59,111,160,0.1);
+  --border:#e8dfd4;--border2:#d4c9bb;
+  --shadow:0 2px 12px rgba(44,24,16,0.06);
+  --radius:12px;
+}
+body{font-family:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;color:var(--text);background:var(--bg);min-height:100vh;-webkit-font-smoothing:antialiased;padding-bottom:env(safe-area-inset-bottom)}
+
+.header{background:var(--bg2);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:var(--shadow)}
+.header-left{display:flex;align-items:center;gap:10px}
+.header-title{font-size:18px;font-weight:700;color:var(--text)}
+.header-sub{font-size:11px;color:var(--dim);font-weight:500}
+.header-right{display:flex;gap:6px}
+
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:9px;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-subtle{background:var(--bg3);color:var(--mid);border:1px solid var(--border)}
+.btn-danger{background:#d44;color:#fff}
+.btn-sm{padding:5px 10px;font-size:11px}
+.btn-back{background:none;border:none;color:var(--dim);cursor:pointer;font-size:14px;padding:8px 0;margin-bottom:12px;font-family:inherit}
+
+.container{max-width:800px;margin:0 auto;padding:16px 16px 100px}
+
+/* Tabs */
+.tabs{display:flex;gap:4px;margin-bottom:16px;border-bottom:2px solid var(--border);padding-bottom:0}
+.tab{padding:10px 16px;font-size:13px;font-weight:600;color:var(--dim);cursor:pointer;border:none;background:none;font-family:inherit;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+
+/* Filter bar */
+.filter-bar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+.filter-chip{padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--bg2);color:var(--mid);font-family:inherit}
+.filter-chip.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* Post card */
+.post-card{background:var(--bg2);border-radius:var(--radius);padding:16px;margin-bottom:10px;border:1px solid var(--border);cursor:pointer;transition:all .15s}
+.post-card:hover{border-color:var(--border2);box-shadow:var(--shadow)}
+.post-card.posted{opacity:0.6}
+.post-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.post-date{font-size:13px;font-weight:600;color:var(--accent)}
+.post-day{font-size:11px;color:var(--dim);margin-left:6px}
+.post-time{font-size:12px;color:var(--dim)}
+.post-title{font-size:16px;font-weight:700;color:var(--text);margin-bottom:4px}
+.post-theme{font-size:13px;color:var(--mid);margin-bottom:8px}
+.post-tags{display:flex;gap:6px;flex-wrap:wrap}
+.tag{font-size:11px;padding:3px 8px;border-radius:6px;font-weight:600}
+.tag-kanal{background:var(--blue-bg);color:var(--blue)}
+.tag-format{background:var(--accent-bg);color:var(--accent)}
+.tag-status{background:var(--green-bg);color:var(--green)}
+.tag-geplant{background:#e8e8e8;color:#888}
+
+/* Detail view */
+.detail-card{background:var(--bg2);border-radius:var(--radius);padding:24px;border:1px solid var(--border);box-shadow:var(--shadow)}
+.detail-title{font-size:22px;font-weight:700;color:var(--text);margin-bottom:4px}
+.detail-field{margin-bottom:16px}
+.detail-label{font-size:11px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+.detail-value{font-size:14px;color:var(--text);line-height:1.5}
+.detail-caption{font-size:14px;color:var(--text);line-height:1.6;background:var(--bg3);border-radius:8px;padding:14px;border-left:3px solid var(--accent);white-space:pre-wrap}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.detail-actions{display:flex;gap:8px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(44,24,16,0.4);z-index:200;display:flex;align-items:flex-start;justify-content:center;padding:30px 16px;overflow-y:auto}
+.modal{background:var(--bg2);border-radius:16px;padding:24px;width:100%;max-width:520px;border:1px solid var(--border);box-shadow:0 20px 60px rgba(44,24,16,0.15)}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.modal-title{font-size:18px;font-weight:700;color:var(--text)}
+.modal-close{background:var(--bg3);border:none;color:var(--dim);cursor:pointer;font-size:16px;width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center}
+
+.form-group{margin-bottom:14px}
+.form-row{display:flex;gap:10px}
+.form-row .form-group{flex:1}
+.form-label{display:block;font-size:12px;font-weight:700;color:var(--dim);margin-bottom:5px;text-transform:uppercase;letter-spacing:0.8px}
+.form-input,.form-select,.form-textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:9px;padding:10px 12px;color:var(--text);font-size:14px;font-family:inherit;outline:none}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent)}
+.form-textarea{min-height:80px;resize:vertical;line-height:1.5}
+.form-submit{width:100%;padding:12px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:4px}
+
+/* Calendar mini */
+.cal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.cal-month{font-size:16px;font-weight:700;color:var(--text)}
+.cal-nav{display:flex;gap:4px}
+.cal-nav button{background:var(--bg3);border:1px solid var(--border);border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;color:var(--mid);font-family:inherit}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:16px}
+.cal-day-name{font-size:10px;font-weight:700;color:var(--dim);text-align:center;padding:4px;text-transform:uppercase}
+.cal-day{font-size:13px;text-align:center;padding:8px 2px;border-radius:8px;cursor:default;color:var(--mid);position:relative}
+.cal-day.today{font-weight:700;color:var(--accent);background:var(--accent-bg)}
+.cal-day.has-post{font-weight:700;color:var(--text)}
+.cal-day.has-post::after{content:'';position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:5px;height:5px;border-radius:50%;background:var(--accent)}
+.cal-day.other-month{color:#ccc}
+
+.empty{text-align:center;padding:60px 20px;color:var(--dim)}
+
+@media(max-width:640px){
+  .detail-grid{grid-template-columns:1fr}
+  .header-title{font-size:16px}
+  .post-title{font-size:15px}
+}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-left">
+    <span style="font-size:24px">&#128240;</span>
+    <div><div class="header-title">Redaktionsplan</div><div class="header-sub">Schmiedewerk Social Media</div></div>
+  </div>
+  <div class="header-right">
+    <button class="btn btn-primary" id="hdr-new">+ Neuer Beitrag</button>
+  </div>
+</div>
+<div class="container" id="C"></div>
+<div id="M"></div>
+<script>
+(function(){
+var posts=load('rp-posts-v2',[]);
+var view='list',selId=null,tab='upcoming',filterKanal='Alle',calYear=2026,calMonth=2;
+var KANALE=['Instagram/Facebook','Instagram','Facebook'];
+var FORMATE=['Bild','Karussell','Reel','Story','Grafik','Video'];
+var TAGE=['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
+var MONATE=['Jänner','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+
+// Pre-load sample data if empty
+if(!posts.length){
+  posts=[
+    {id:uid(),wochentag:'',datum:'',uhrzeit:'',kanal:'Instagram/Facebook',name:'Vorstellung',thema:'Teampräsentation',ziel:'Likes',format:'Bild',caption:'Hammer und Amboss treffen auf Instagram! \ud83d\udd28\ud83d\udd25 Das Team Schmiedewerk Thomas Furtner ist ab sofort auch hier zu finden. Auf Facebook kennt ihr uns vielleicht schon – jetzt zeigen wir euch auch hier, was bei uns so alles aus dem Feuer kommt. Lasst uns ein Like und Follow hier, damit der Funke auch auf Instagram überspringt!',notizen:'Auf Facebook ein link verlinken für Instagram',status:'geplant'},
+    {id:uid(),wochentag:'Dienstag',datum:'2026-03-10',uhrzeit:'17:00',kanal:'Instagram/Facebook',name:'Poolumrandung',thema:'Poolumrandung, Sicherheit von Pools, Sommer kommt',ziel:'Aufruf zum Teilen',format:'Bild',caption:'',notizen:'',status:'geplant'},
+    {id:uid(),wochentag:'Freitag',datum:'2026-03-20',uhrzeit:'16:00',kanal:'Instagram/Facebook',name:'Frühlingsbeginn',thema:'Gartenskulpturen',ziel:'Likes',format:'Karussell',caption:'',notizen:'',status:'geplant'},
+    {id:uid(),wochentag:'Mittwoch',datum:'2026-03-25',uhrzeit:'17:00',kanal:'Instagram/Facebook',name:'Schmiedekunst',thema:'Schmiedewerkstatt, Werkstück wird geschmiedet',ziel:'Likes',format:'Reel',caption:'',notizen:'',status:'geplant'},
+    {id:uid(),wochentag:'Montag',datum:'2026-03-30',uhrzeit:'17:00',kanal:'Instagram/Facebook',name:'Osterstory',thema:'Umfrage',ziel:'Call to Action',format:'Story',caption:'Ratet mal, welches Werkstück hier gerade entsteht! (Foto aus der Werkstatt)',notizen:'Nahaufnahme von einem unfertigen Werkstück',status:'geplant'},
+    {id:uid(),wochentag:'Sonntag',datum:'2026-04-05',uhrzeit:'09:00',kanal:'Instagram/Facebook',name:'Ostern',thema:'Osterfeste',ziel:'Kommentare, Osterwünsche',format:'Bild',caption:'',notizen:'',status:'geplant'},
+    {id:uid(),wochentag:'Freitag',datum:'2026-04-10',uhrzeit:'15:00',kanal:'Instagram/Facebook',name:'Entstehung',thema:'Ablauf, Besichtigung, Angebot, Fertigung',ziel:'Teilen, Kommentare',format:'Grafik',caption:'',notizen:'',status:'geplant'}
+  ];
+  sv();
+}
+
+function load(k,f){try{var d=localStorage.getItem(k);return d?JSON.parse(d):f}catch(e){return f}}
+function sv(){try{localStorage.setItem('rp-posts-v2',JSON.stringify(posts))}catch(e){}}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+function es(s){if(!s)return'';var d=document.createElement('div');d.textContent=String(s);return d.innerHTML}
+function fd(d){if(!d)return'';try{var dt=new Date(d);return dt.toLocaleDateString('de-AT',{day:'2-digit',month:'2-digit',year:'numeric'})}catch(e){return d}}
+function dayName(d){if(!d)return'';try{return TAGE[new Date(d).getDay()]}catch(e){return''}}
+
+function sortedPosts(){
+  return posts.slice().sort(function(a,b){
+    if(!a.datum&&!b.datum)return 0;if(!a.datum)return 1;if(!b.datum)return-1;
+    return a.datum<b.datum?-1:a.datum>b.datum?1:0;
+  });
+}
+
+function filteredPosts(){
+  var now=new Date().toISOString().slice(0,10);
+  var sorted=sortedPosts();
+  var filtered=sorted;
+  if(tab==='upcoming')filtered=sorted.filter(function(p){return p.status!=='gepostet'});
+  else if(tab==='posted')filtered=sorted.filter(function(p){return p.status==='gepostet'});
+  if(filterKanal!=='Alle')filtered=filtered.filter(function(p){return p.kanal&&p.kanal.indexOf(filterKanal)>=0});
+  return filtered;
+}
+
+function render(){
+  var c=document.getElementById('C');
+  if(view==='list')c.innerHTML=rList();
+  else if(view==='detail')c.innerHTML=rDetail();
+  else if(view==='calendar')c.innerHTML=rCalendar();
+  document.getElementById('M').innerHTML='';
+  bind();
+}
+
+function rList(){
+  var h='';
+  h+='<div class="tabs"><button class="tab'+(tab==='upcoming'?' active':'')+'" data-a="tab" data-v="upcoming">Geplant</button><button class="tab'+(tab==='posted'?' active':'')+'" data-a="tab" data-v="posted">Gepostet</button><button class="tab'+(tab==='all'?' active':'')+'" data-a="tab" data-v="all">Alle</button><button class="tab'+(view==='calendar'?' active':'')+'" data-a="cal">Kalender</button></div>';
+  h+='<div class="filter-bar"><span style="font-size:12px;color:var(--dim);font-weight:600">Kanal:</span>';
+  ['Alle','Instagram','Facebook'].forEach(function(k){
+    h+='<button class="filter-chip'+(filterKanal===k?' active':'')+'" data-a="filter" data-v="'+k+'">'+k+'</button>';
+  });
+  h+='</div>';
+  var fp=filteredPosts();
+  if(!fp.length){
+    h+='<div class="empty"><div style="font-size:40px;margin-bottom:12px">&#128240;</div><div style="font-size:15px;margin-bottom:6px">Keine Beiträge gefunden</div></div>';
+    return h;
+  }
+  fp.forEach(function(p){
+    var isPosted=p.status==='gepostet';
+    h+='<div class="post-card'+(isPosted?' posted':'')+'" data-a="open" data-id="'+p.id+'">';
+    h+='<div class="post-top"><div><span class="post-date">'+(p.datum?fd(p.datum):'Kein Datum')+'</span>';
+    var dn=p.wochentag||dayName(p.datum);
+    if(dn)h+='<span class="post-day">'+es(dn)+'</span>';
+    h+='</div>';
+    if(p.uhrzeit)h+='<span class="post-time">'+es(p.uhrzeit)+' Uhr</span>';
+    h+='</div>';
+    h+='<div class="post-title">'+es(p.name||'Ohne Titel')+'</div>';
+    if(p.thema)h+='<div class="post-theme">'+es(p.thema)+'</div>';
+    h+='<div class="post-tags">';
+    if(p.kanal)h+='<span class="tag tag-kanal">'+es(p.kanal)+'</span>';
+    if(p.format)h+='<span class="tag tag-format">'+es(p.format)+'</span>';
+    h+='<span class="tag '+(isPosted?'tag-status':'tag-geplant')+'">'+(isPosted?'Gepostet':'Geplant')+'</span>';
+    h+='</div></div>';
+  });
+  return h;
+}
+
+function rDetail(){
+  var p=posts.find(function(x){return x.id===selId});if(!p)return'';
+  var isPosted=p.status==='gepostet';
+  var h='<button class="btn-back" data-a="back">\u2190 Zurueck</button>';
+  h+='<div class="detail-card">';
+  h+='<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px"><div>';
+  h+='<div class="detail-title">'+es(p.name||'Ohne Titel')+'</div>';
+  var dn=p.wochentag||dayName(p.datum);
+  h+='<div style="font-size:13px;color:var(--dim)">'+(p.datum?fd(p.datum):'Kein Datum')+(dn?' &middot; '+es(dn):'')+(p.uhrzeit?' &middot; '+es(p.uhrzeit)+' Uhr':'')+'</div>';
+  h+='</div><span class="tag '+(isPosted?'tag-status':'tag-geplant')+'" style="font-size:13px;padding:5px 12px">'+(isPosted?'Gepostet':'Geplant')+'</span></div>';
+
+  h+='<div class="detail-grid">';
+  if(p.kanal){h+='<div class="detail-field"><div class="detail-label">Kanal</div><div class="detail-value">'+es(p.kanal)+'</div></div>'}
+  if(p.format){h+='<div class="detail-field"><div class="detail-label">Content-Format</div><div class="detail-value">'+es(p.format)+'</div></div>'}
+  if(p.thema){h+='<div class="detail-field"><div class="detail-label">Thema / Inhalt</div><div class="detail-value">'+es(p.thema)+'</div></div>'}
+  if(p.ziel){h+='<div class="detail-field"><div class="detail-label">Ziel / CTA</div><div class="detail-value">'+es(p.ziel)+'</div></div>'}
+  h+='</div>';
+
+  if(p.caption){h+='<div class="detail-field"><div class="detail-label">Caption</div><div class="detail-caption">'+es(p.caption)+'</div></div>'}
+  if(p.notizen){h+='<div class="detail-field"><div class="detail-label">Notizen</div><div class="detail-value" style="color:var(--dim);font-style:italic">'+es(p.notizen)+'</div></div>'}
+
+  h+='<div class="detail-actions">';
+  if(!isPosted)h+='<button class="btn btn-primary" data-a="posted" data-id="'+p.id+'">&#10003; Als gepostet markieren</button>';
+  else h+='<button class="btn btn-subtle" data-a="unpost" data-id="'+p.id+'">Zurueck auf geplant</button>';
+  h+='<button class="btn btn-subtle" data-a="edit" data-id="'+p.id+'">Bearbeiten</button>';
+  h+='<button class="btn btn-sm" style="background:none;color:#d44;border:1px solid rgba(221,68,68,0.3)" data-a="askdel" data-id="'+p.id+'">L\u00f6schen</button>';
+  h+='</div></div>';
+  return h;
+}
+
+function rCalendar(){
+  var h='';
+  h+='<div class="tabs"><button class="tab" data-a="tab" data-v="upcoming">Geplant</button><button class="tab" data-a="tab" data-v="posted">Gepostet</button><button class="tab" data-a="tab" data-v="all">Alle</button><button class="tab active" data-a="cal">Kalender</button></div>';
+  h+='<div class="cal-header"><div class="cal-nav"><button data-a="cprev">\u25C0</button></div><div class="cal-month">'+MONATE[calMonth]+' '+calYear+'</div><div class="cal-nav"><button data-a="cnext">\u25B6</button></div></div>';
+  h+='<div class="cal-grid">';
+  ['Mo','Di','Mi','Do','Fr','Sa','So'].forEach(function(d){h+='<div class="cal-day-name">'+d+'</div>'});
+  var first=new Date(calYear,calMonth,1);var dow=first.getDay();dow=dow===0?6:dow-1;
+  var daysInMonth=new Date(calYear,calMonth+1,0).getDate();
+  var today=new Date().toISOString().slice(0,10);
+  var postDates={};
+  posts.forEach(function(p){if(p.datum){if(!postDates[p.datum])postDates[p.datum]=[];postDates[p.datum].push(p)}});
+  for(var i=0;i<dow;i++){
+    var prevD=new Date(calYear,calMonth,-(dow-1-i));
+    h+='<div class="cal-day other-month">'+prevD.getDate()+'</div>';
+  }
+  for(var d=1;d<=daysInMonth;d++){
+    var ds=calYear+'-'+String(calMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    var isToday=ds===today;
+    var hasPost=postDates[ds]&&postDates[ds].length>0;
+    h+='<div class="cal-day'+(isToday?' today':'')+(hasPost?' has-post':'')+'"'+(hasPost?' data-a="calday" data-v="'+ds+'" style="cursor:pointer"':'')+'>'+d+'</div>';
+  }
+  h+='</div>';
+  // Posts for this month
+  var monthPosts=sortedPosts().filter(function(p){
+    if(!p.datum)return false;
+    return p.datum.slice(0,7)===calYear+'-'+String(calMonth+1).padStart(2,'0');
+  });
+  if(monthPosts.length){
+    h+='<div class="section-title" style="font-size:13px;font-weight:600;color:var(--dim);text-transform:uppercase;letter-spacing:1px;margin:8px 0 10px">Beitr\u00e4ge im '+MONATE[calMonth]+'</div>';
+    monthPosts.forEach(function(p){
+      var isPosted=p.status==='gepostet';
+      h+='<div class="post-card'+(isPosted?' posted':'')+'" data-a="open" data-id="'+p.id+'" style="padding:12px 14px">';
+      h+='<div style="display:flex;justify-content:space-between;align-items:center">';
+      h+='<div><span style="font-size:13px;font-weight:700;color:var(--accent)">'+fd(p.datum)+'</span> <span style="font-size:14px;font-weight:600;margin-left:8px">'+es(p.name)+'</span></div>';
+      h+='<div class="post-tags"><span class="tag tag-format" style="font-size:10px">'+es(p.format||'')+'</span></div>';
+      h+='</div></div>';
+    });
+  }
+  return h;
+}
+
+function showModal(title,body){
+  var mr=document.getElementById('M');
+  mr.innerHTML='<div class="modal-overlay" id="mo"><div class="modal" id="mc"><div class="modal-header"><div class="modal-title">'+title+'</div><button class="modal-close" id="mx">&#10005;</button></div>'+body+'</div></div>';
+  document.getElementById('mo').addEventListener('click',function(e){if(e.target.id==='mo')closeM()});
+  document.getElementById('mx').addEventListener('click',closeM);
+}
+function closeM(){document.getElementById('M').innerHTML=''}
+
+function fg(l,id,t,ph,v){return'<div class="form-group"><label class="form-label">'+l+'</label><input class="form-input" type="'+t+'" id="'+id+'" placeholder="'+(ph||'')+'"'+(v!=null?' value="'+es(String(v))+'"':'')+'></div>'}
+function fsel(l,id,opts,v){var h='<div class="form-group"><label class="form-label">'+l+'</label><select class="form-select" id="'+id+'">';opts.forEach(function(o){h+='<option value="'+o+'"'+(v===o?' selected':'')+'>'+o+'</option>'});return h+'</select></div>'}
+function fta(l,id,ph,v){return'<div class="form-group"><label class="form-label">'+l+'</label><textarea class="form-textarea" id="'+id+'" placeholder="'+(ph||'')+'">'+(v?es(v):'')+'</textarea></div>'}
+
+function showPostForm(p){
+  var isEdit=!!p;
+  var title=isEdit?'Beitrag bearbeiten':'Neuer Beitrag';
+  p=p||{name:'',datum:'',uhrzeit:'',kanal:'Instagram/Facebook',format:'Bild',thema:'',ziel:'',caption:'',notizen:'',status:'geplant'};
+  var b='<form id="fpf">';
+  b+=fg('Posting-Name *','pf-name','text','z.B. Poolumrandung',p.name);
+  b+='<div class="form-row">'+fg('Datum','pf-datum','date','',p.datum)+fg('Uhrzeit','pf-uhrzeit','time','',p.uhrzeit)+'</div>';
+  b+='<div class="form-row">'+fsel('Kanal','pf-kanal',KANALE,p.kanal)+fsel('Format','pf-format',FORMATE,p.format)+'</div>';
+  b+=fg('Thema / Inhalt','pf-thema','text','z.B. Gartenskulpturen',p.thema);
+  b+=fg('Ziel / CTA','pf-ziel','text','z.B. Likes, Teilen',p.ziel);
+  b+=fta('Caption','pf-caption','Beitragstext...',p.caption);
+  b+=fta('Notizen','pf-notizen','Interne Notizen...',p.notizen);
+  b+='<button type="submit" class="form-submit">'+(isEdit?'Speichern':'Beitrag anlegen')+'</button></form>';
+  showModal(title,b);
+  document.getElementById('fpf').addEventListener('submit',function(ev){
+    ev.preventDefault();
+    var name=document.getElementById('pf-name').value.trim();
+    if(!name)return;
+    var data={
+      name:name,
+      datum:document.getElementById('pf-datum').value,
+      uhrzeit:document.getElementById('pf-uhrzeit').value,
+      kanal:document.getElementById('pf-kanal').value,
+      format:document.getElementById('pf-format').value,
+      thema:document.getElementById('pf-thema').value.trim(),
+      ziel:document.getElementById('pf-ziel').value.trim(),
+      caption:document.getElementById('pf-caption').value,
+      notizen:document.getElementById('pf-notizen').value,
+      wochentag:''
+    };
+    if(data.datum)data.wochentag=dayName(data.datum);
+    if(isEdit){
+      var idx=posts.findIndex(function(x){return x.id===p.id});
+      if(idx>=0){data.id=p.id;data.status=p.status;posts[idx]=data}
+    }else{
+      data.id=uid();data.status='geplant';posts.push(data);
+    }
+    sv();closeM();render();
+  });
+}
+
+function bind(){
+  document.getElementById('C').addEventListener('click',function(ev){
+    var el=ev.target.closest('[data-a]');if(!el)return;
+    var a=el.getAttribute('data-a'),id=el.getAttribute('data-id'),v=el.getAttribute('data-v');
+    if(a==='tab'){tab=v;view='list';render()}
+    else if(a==='cal'){view='calendar';render()}
+    else if(a==='filter'){filterKanal=v;render()}
+    else if(a==='open'){selId=id;view='detail';render()}
+    else if(a==='back'){view='list';selId=null;render()}
+    else if(a==='posted'){var p=posts.find(function(x){return x.id===id});if(p)p.status='gepostet';sv();render()}
+    else if(a==='unpost'){var p2=posts.find(function(x){return x.id===id});if(p2)p2.status='geplant';sv();render()}
+    else if(a==='edit'){var p3=posts.find(function(x){return x.id===id});if(p3)showPostForm(p3)}
+    else if(a==='askdel'){
+      if(confirm('Beitrag wirklich l\u00f6schen?')){
+        posts=posts.filter(function(x){return x.id!==id});sv();view='list';selId=null;render();
+      }
+    }
+    else if(a==='cprev'){calMonth--;if(calMonth<0){calMonth=11;calYear--}render()}
+    else if(a==='cnext'){calMonth++;if(calMonth>11){calMonth=0;calYear++}render()}
+    else if(a==='calday'){
+      var dayPosts=posts.filter(function(p){return p.datum===v});
+      if(dayPosts.length===1){selId=dayPosts[0].id;view='detail';render()}
+      else if(dayPosts.length>1){selId=dayPosts[0].id;view='detail';render()}
+    }
+  });
+}
+
+document.getElementById('hdr-new').addEventListener('click',function(){showPostForm(null)});
+
+// Init calendar to current month
+var now=new Date();calYear=now.getFullYear();calMonth=now.getMonth();
+render();
+})();
+</script>
+</body>
+</html>
